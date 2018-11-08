@@ -1,0 +1,5 @@
+*.iml
+.idea/
+*.credentials
+*target/
+/acuity-connection.txt
