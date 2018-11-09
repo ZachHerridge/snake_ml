@@ -1,15 +1,8 @@
 package uwrf.edu.acm.snake;
 
-
-import uwrf.edu.nueral_net.NeuralNetwork;
-
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class SnakeGame {
 
@@ -110,52 +103,5 @@ public class SnakeGame {
             }
         }
         return output;
-    }
-
-    public static int evaluate(NeuralNetwork neuralNetwork) {
-        SnakeGame snakeGame = new SnakeGame();
-        while (true) {
-            List<Double> update = neuralNetwork.update(snakeGame.toOutput());
-
-            double bestWeight = 0;
-            int bestIndex = 0;
-            for (int i = 0; i < update.size(); i++) {
-                if (update.get(i) > bestWeight) {
-                    bestWeight = update.get(i);
-                    bestIndex = i;
-                }
-            }
-            snakeGame.dir = bestIndex;
-            snakeGame.tick();
-
-            if (snakeGame.gameOver) {
-                return snakeGame.score;
-            }
-        }
-    }
-
-    public static void createGeneration(int membersCount) {
-        List<NeuralNetwork> members = new ArrayList<>();
-        for (int i = 0; i < membersCount; i++) {
-            members.add(new NeuralNetwork(100, 4, 1, 25));
-        }
-
-        Map<Integer, List<NeuralNetwork>> collect = members.stream().collect(Collectors.groupingBy(SnakeGame::evaluate));
-
-        System.out.println("Stats score: " + collect.keySet().stream().mapToInt(value -> value).summaryStatistics());
-
-        List<NeuralNetwork> topFive = collect.entrySet().stream()
-                .sorted(Comparator.comparingInt(Map.Entry::getKey))
-                .map(integerListEntry -> integerListEntry.getValue().stream())
-                .flatMap(Function.identity())
-                .limit(5)
-                .collect(Collectors.toList());
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        createGeneration(50);
-        createGeneration(50);
-        createGeneration(50);
-        createGeneration(50);
     }
 }
