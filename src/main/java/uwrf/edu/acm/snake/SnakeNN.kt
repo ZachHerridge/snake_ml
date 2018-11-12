@@ -13,22 +13,25 @@ class NNSnake(private val neuralNet: NeuralNet) : PopulationMember {
     }
 
     override fun getFitness(): Double {
-        return snakeGame.score.toDouble()
+        return snakeGame.fitness
     }
 
     override fun run() {
         while (!snakeGame.isGameOver) {
-            val output = getNeuralNet().getOutput(snakeGame.toOutput().toFloatArray())
+            val toFloatArray = snakeGame.toOutput().toFloatArray()
+            val output = getNeuralNet().getOutput(toFloatArray)
             val maxBy = output.mapIndexed { index, fl -> Pair(index, fl) }.maxBy { pair -> pair.second } ?: continue
             snakeGame.setDir(maxBy.first)
             snakeGame.tick()
-            SnakeFrame.snakePanel.draw(snakeGame)
-            Thread.sleep(300)
+            if (SnakePopulation.generation > 30){
+                SnakeFrame.snakePanel.draw(snakeGame)
+                Thread.sleep(10)
+            }
         }
     }
 }
 
-object SnakePopulation : Population(50) {
+object SnakePopulation : Population(500) {
 
     override fun createMember(neuralNet: NeuralNet): PopulationMember {
         return NNSnake(neuralNet)
@@ -37,5 +40,5 @@ object SnakePopulation : Population(50) {
 
 fun main(args: Array<String>) {
     SnakeFrame.isVisible = true
-    SnakePopulation.runUntil(10)
+    SnakePopulation.runUntil(40)
 }

@@ -25,12 +25,15 @@ class SnakePanel : JPanel() {
 
         val snakeGame = this.snakeGame ?: return
 
-        for (x in 0 until snakeGame.width){
-            for (y in 0 until snakeGame.height){
+        val size = 10
+
+
+        for (x in 0 until snakeGame.width + 1){
+            for (y in 0 until snakeGame.height + 1){
                 if (snakeGame.isSnakeAt(x, y, false)) g.color = Color.BLACK
                 else if (snakeGame.appleX == x && snakeGame!!.appleY == y) g.color = Color.RED
                 else g.color = Color.WHITE
-                g.fillRect(x * 20, y * 20, 20, 20)
+                g.fillRect(x * size, y * size, size, size)
             }
         }
     }

@@ -204,7 +204,7 @@ abstract class Population(size: Int) {
     var generation = 0
 
     init {
-        repeat(size) { members.add(createMember(NeuralNet(100, 40, 4))) }
+        repeat(size) { members.add(createMember(NeuralNet(24, 18, 4))) }
     }
 
     fun runUntil(generation: Int) {
@@ -230,7 +230,7 @@ abstract class Population(size: Int) {
             val p2 = selectRandom() ?: return@repeat
 
             val crossOver = p1.getNeuralNet().crossOver(p2.getNeuralNet())
-            crossOver.mutate(.2)
+            crossOver.mutate(.05)
 
             nextGeneration.add(createMember(crossOver))
         }
