@@ -172,6 +172,12 @@ class NeuralNet(val input: Int, val hidden: Int, val output: Int) {
         clone.matrixOut = matrixOut.clone()
         return clone
     }
+
+    fun mutate(rate: Double) {
+        matrixIn.mutate(rate)
+        matrixHidden.mutate(rate)
+        matrixOut.mutate(rate)
+    }
 }
 
 object Matrices {
@@ -192,37 +198,67 @@ object NNMath {
     }
 }
 
-class Population(size: Int){
+abstract class Population(size: Int) {
 
-    val members = mutableMapOf<NeuralNet, Double>()
+    var members: MutableList<PopulationMember> = mutableListOf()
+    var generation = 0
 
     init {
-        for (i in 0 until size){
-            members[NeuralNet(2, 10, 1)] = 0.0
+        repeat(size) { members.add(createMember(NeuralNet(100, 40, 4))) }
+    }
+
+    fun runUntil(generation: Int) {
+        while (this.generation < generation) {
+            runCurrentGeneration()
+            buildNextGeneration()
+            this.generation++
         }
     }
 
-    fun evaluateFitness(function: (network: NeuralNet) -> Double){
-        for (member in members) {
-            members[member.key] = function(member.key)
-        }
+    private fun runCurrentGeneration() {
+        members.forEach { it.run() }
     }
 
+    private fun buildNextGeneration() {
+        val nextGeneration = mutableListOf<PopulationMember>()
+        members.maxBy { it.getFitness() }?.let {
+            println(it.getFitness())
+            nextGeneration.add(createMember(it.getNeuralNet()))
+        }
+        repeat(members.size - 1) {
+            val p1 = selectRandom() ?: return@repeat
+            val p2 = selectRandom() ?: return@repeat
+
+            val crossOver = p1.getNeuralNet().crossOver(p2.getNeuralNet())
+            crossOver.mutate(.2)
+
+            nextGeneration.add(createMember(crossOver))
+        }
+        members = nextGeneration
+    }
+
+    private fun selectRandom(): PopulationMember? {
+        var sum = members.sumByDouble { it.getFitness() }
+        val rand = Math.floor(ThreadLocalRandom.current().nextDouble(0.0, sum))
+        var runningSum = 0.0
+        for (i in 0 until members.size) {
+            runningSum += members[i].getFitness()
+            if (runningSum > rand) {
+                return members[i]
+            }
+        }
+
+        return null
+    }
+
+    abstract fun createMember(neuralNet: NeuralNet): PopulationMember
 }
 
-fun main(args: Array<String>) {
-    val population = Population(50)
+interface PopulationMember {
 
-    population.evaluateFitness { neuralNet ->
-        repeat(10) {
-            val input = floatArrayOf(ThreadLocalRandom.current().nextInt(-100, 100).toFloat(), ThreadLocalRandom.current().nextInt(-100, 100).toFloat())
-            val output = neuralNet.getOutput(input)[0]
+    fun getNeuralNet(): NeuralNet
 
-            val difference = Math.abs((input[0] + input[1]) - output)
+    fun getFitness(): Double
 
-            println("${input[0]} + ${input[1]} = $output $difference")
-        }
-
-        return@evaluateFitness 0.0
-    }
+    fun run()
 }

@@ -93,15 +93,28 @@ public class SnakeGame {
         } while (isSnakeAt(appleX, appleY, false));
     }
 
-    public List<Double> toOutput() {
-        List<Double> output = new ArrayList<>();
+    public List<Float> toOutput() {
+        List<Float> output = new ArrayList<>();
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
-                if (isSnakeAt(x, y, false)) output.add(.5);
-                else if (x == appleX && y == appleY) output.add(1.0);
-                else output.add(0.0);
+                if (isSnakeAt(x, y, false)) output.add(.5f);
+                else if (x == appleX && y == appleY) output.add(1.0f);
+                else output.add(0.0f);
             }
         }
         return output;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public SnakeGame setDir(int dir) {
+        this.dir = dir;
+        return this;
     }
 }
