@@ -22,6 +22,8 @@ class NNSnake(private val neuralNet: NeuralNet) : PopulationMember {
             val maxBy = output.mapIndexed { index, fl -> Pair(index, fl) }.maxBy { pair -> pair.second } ?: continue
             snakeGame.setDir(maxBy.first)
             snakeGame.tick()
+            SnakeFrame.snakePanel.draw(snakeGame)
+            Thread.sleep(300)
         }
     }
 }
@@ -34,5 +36,6 @@ object SnakePopulation : Population(50) {
 }
 
 fun main(args: Array<String>) {
-    SnakePopulation.runUntil(100)
+    SnakeFrame.isVisible = true
+    SnakePopulation.runUntil(10)
 }

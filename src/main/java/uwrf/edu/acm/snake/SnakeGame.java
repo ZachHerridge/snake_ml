@@ -17,7 +17,11 @@ public class SnakeGame {
     private int movesSinceScore = 0;
     private boolean gameOver = false;
 
+    private int width, height;
+
     public SnakeGame() {
+        width = 9;
+        height = 9;
         SnakeNode head = new SnakeNode(5, 5);
         this.head = head;
         this.tail = head;
@@ -38,7 +42,7 @@ public class SnakeGame {
         else if (dir == 2) head.move(0, 1);
         else if (dir == 3) head.move(-1, 0);
 
-        if (isSnakeAt(head.getX(), head.getY(), true) || head.getX() < 0 || head.getX() > 9 || head.getY() < 0 || head.getY() > 9) {
+        if (isSnakeAt(head.getX(), head.getY(), true) || head.getX() < 0 || head.getX() > width || head.getY() < 0 || head.getY() > height) {
             gameOver = true;
             return;
         }
@@ -88,8 +92,8 @@ public class SnakeGame {
 
     public void placeApple() {
         do {
-            appleX = ThreadLocalRandom.current().nextInt(0, 10);
-            appleY = ThreadLocalRandom.current().nextInt(0, 10);
+            appleX = ThreadLocalRandom.current().nextInt(0, width);
+            appleY = ThreadLocalRandom.current().nextInt(0, height);
         } while (isSnakeAt(appleX, appleY, false));
     }
 
@@ -103,6 +107,22 @@ public class SnakeGame {
             }
         }
         return output;
+    }
+
+    public int getAppleX() {
+        return appleX;
+    }
+
+    public int getAppleY() {
+        return appleY;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public boolean isGameOver() {
