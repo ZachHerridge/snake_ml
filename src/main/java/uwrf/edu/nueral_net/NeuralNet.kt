@@ -2,7 +2,6 @@ package uwrf.edu.nueral_net
 
 import java.util.concurrent.ThreadLocalRandom
 
-
 class Matrix(val rows: Int, val cols: Int) {
 
     var matrix = Array(rows) { FloatArray(cols) }
@@ -201,10 +200,12 @@ object NNMath {
 abstract class Population(size: Int) {
 
     var members: MutableList<PopulationMember> = mutableListOf()
+    var bestMember : PopulationMember? = null
+    var bestFitness : Double = 0.0
     var generation = 0
 
     init {
-        repeat(size) { members.add(createMember(NeuralNet(24, 18, 4))) }
+        repeat(size) { members.add(createMember(NeuralNet(8, 18, 4))) }
     }
 
     fun runUntil(generation: Int) {
@@ -216,21 +217,29 @@ abstract class Population(size: Int) {
     }
 
     private fun runCurrentGeneration() {
-        members.forEach { it.run() }
+        members.forEach { it.run(25) }
     }
 
     private fun buildNextGeneration() {
         val nextGeneration = mutableListOf<PopulationMember>()
         members.maxBy { it.getFitness() }?.let {
             println(it.getFitness())
-            nextGeneration.add(createMember(it.getNeuralNet()))
+            if (bestFitness < it.getFitness()){
+                bestMember = it
+                bestFitness = it.getFitness()
+                nextGeneration.add(createMember(it.getNeuralNet()))
+            }
+            else{
+                nextGeneration.add(createMember(it.getNeuralNet()))
+                nextGeneration.add(createMember(bestMember!!.getNeuralNet()))
+            }
         }
         repeat(members.size - 1) {
             val p1 = selectRandom() ?: return@repeat
             val p2 = selectRandom() ?: return@repeat
 
             val crossOver = p1.getNeuralNet().crossOver(p2.getNeuralNet())
-            crossOver.mutate(.05)
+            crossOver.mutate(.01)
 
             nextGeneration.add(createMember(crossOver))
         }
@@ -260,5 +269,5 @@ interface PopulationMember {
 
     fun getFitness(): Double
 
-    fun run()
+    fun run(times: Int)
 }

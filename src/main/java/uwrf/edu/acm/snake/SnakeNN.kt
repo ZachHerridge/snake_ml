@@ -6,32 +6,38 @@ import uwrf.edu.nueral_net.PopulationMember
 
 class NNSnake(private val neuralNet: NeuralNet) : PopulationMember {
 
-    val snakeGame = SnakeGame()
+    var draw = false
+    val fitnesses = mutableListOf<Double>()
 
     override fun getNeuralNet(): NeuralNet {
         return neuralNet
     }
 
     override fun getFitness(): Double {
-        return snakeGame.fitness
+        return fitnesses.sum()
     }
 
-    override fun run() {
-        while (!snakeGame.isGameOver) {
-            val toFloatArray = snakeGame.toOutput().toFloatArray()
-            val output = getNeuralNet().getOutput(toFloatArray)
-            val maxBy = output.mapIndexed { index, fl -> Pair(index, fl) }.maxBy { pair -> pair.second } ?: continue
-            snakeGame.setDir(maxBy.first)
-            snakeGame.tick()
-            if (SnakePopulation.generation > 30){
-                SnakeFrame.snakePanel.draw(snakeGame)
-                Thread.sleep(10)
+    override fun run(times: Int) {
+        repeat(times){
+            val snakeGame = SnakeGame()
+            while (!snakeGame.isGameOver) {
+                val toFloatArray = snakeGame.toOutput().toFloatArray()
+                val output = getNeuralNet().getOutput(toFloatArray)
+                val maxBy = output.mapIndexed { index, fl -> Pair(index, fl) }.maxBy { pair -> pair.second } ?: continue
+                snakeGame.setDir(maxBy.first)
+                snakeGame.tick()
+                if (draw){
+                    println("Dir: ${maxBy.first}")
+                    SnakeFrame.snakePanel.draw(snakeGame)
+                    Thread.sleep(500)
+                }
+                fitnesses.add(snakeGame.fitness)
             }
         }
     }
 }
 
-object SnakePopulation : Population(500) {
+object SnakePopulation : Population(100) {
 
     override fun createMember(neuralNet: NeuralNet): PopulationMember {
         return NNSnake(neuralNet)
@@ -40,5 +46,12 @@ object SnakePopulation : Population(500) {
 
 fun main(args: Array<String>) {
     SnakeFrame.isVisible = true
-    SnakePopulation.runUntil(40)
+
+    while (true){
+        SnakePopulation.runUntil(SnakePopulation.generation + 10)
+
+        val createMember = SnakePopulation.createMember(SnakePopulation.bestMember!!.getNeuralNet())
+        (createMember as NNSnake).draw = true
+        createMember.run(1)
+    }
 }
