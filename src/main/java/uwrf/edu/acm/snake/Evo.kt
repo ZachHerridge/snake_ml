@@ -11,7 +11,7 @@ class Eval() : Environment {
         population ?: return
         for (genome in population) {
             genome.fitness = 0f;
-            repeat(30){
+            repeat(3){
                 val snakeGame = SnakeGame()
                 while (!snakeGame.isGameOver) {
                     val evaluateNetwork = genome.evaluateNetwork(snakeGame.toOutput().toFloatArray())
@@ -21,7 +21,7 @@ class Eval() : Environment {
                 }
                 genome.fitness += snakeGame.fitness.toFloat()
             }
-            genome.fitness /= 30
+            genome.fitness /= 3
         }
     }
 }
@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
     var generation = 0
 
     while (true){
-        repeat(15){
+        repeat(100){
             pool.evaluateFitness(eval)
             topGenome = pool.topGenome
             println("TopFitness : " + topGenome!!.points)
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
             generation++
         }
 
-        repeat(3){
+        repeat(1){
             val snakeGame = SnakeGame()
             while (!snakeGame.isGameOver) {
                 val evaluateNetwork = topGenome!!.evaluateNetwork(snakeGame.toOutput().toFloatArray())
@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
                 snakeGame.tick()
 
                 SnakeFrame.snakePanel.draw(snakeGame)
-                Thread.sleep(10)
+                Thread.sleep(2)
             }
             println(snakeGame.deathReason)
         }

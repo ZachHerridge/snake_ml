@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 class SnakeGame {
 
-    private var dir = 0
+    var dir = 0
 
     private val head: SnakeNode
     private var tail: SnakeNode? = null
@@ -30,7 +30,7 @@ class SnakeGame {
     val height: Int
 
     val fitness: Double
-        get() = (moves * 10 + snakeLength * snakeLength + snakeLength * 500).toDouble()
+        get() = (moves + (snakeLength * snakeLength) + (snakeLength * 500)).toDouble()
 
     init {
         width = 50
@@ -85,9 +85,8 @@ class SnakeGame {
             addSegment()
             placeApple()
             snakeLength++
-            leftToLive += 100
+            leftToLive += 250
         }
-
     }
 
     fun addSegment() {
@@ -118,18 +117,19 @@ class SnakeGame {
         for (i in -1..1) {
             for (j in -1..1) {
                 if (i == 0 && j == 0) continue
+                if (i != 0 && j != 0) continue
                 val canMove = isInBounds(head.x + i, head.y + j) && !isSnakeAt(head.x + i, head.y + j, false)
                 vision.add(if (canMove) 0f else 1f)
             }
         }
 
         val output = mutableListOf<Float>()
-        output.addAll(vision.subList(dir, vision.size).plus(vision.subList(0, dir)))
+        output.addAll(vision)
 
-        output.add(if (head.x > appleX) 0f else 1f)
-        output.add(if (head.y > appleY) 0f else 1f)
-        output.add(if (head.x < appleX) 0f else 1f)
-        output.add(if (head.y < appleY) 0f else 1f)
+        output.add(head.x - appleX.toFloat())
+        output.add(head.y - appleY.toFloat())
+
+        output.add(dir.toFloat())
 
         return output
     }

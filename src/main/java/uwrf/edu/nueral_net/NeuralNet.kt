@@ -217,7 +217,7 @@ abstract class Population(size: Int) {
     }
 
     private fun runCurrentGeneration() {
-        members.forEach { it.run(25) }
+        members.forEach { it.run(5) }
     }
 
     private fun buildNextGeneration() {
