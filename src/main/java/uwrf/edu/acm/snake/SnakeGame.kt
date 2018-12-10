@@ -1,9 +1,8 @@
 package uwrf.edu.acm.snake
 
-import java.util.ArrayList
-import java.util.concurrent.ThreadLocalRandom
+import kotlin.random.Random
 
-class SnakeGame {
+class SnakeGame(val random: Random) {
 
     var dir = 0
 
@@ -29,8 +28,10 @@ class SnakeGame {
     val width: Int
     val height: Int
 
+    var score = 0
+
     val fitness: Double
-        get() = (moves + (snakeLength * snakeLength) + (snakeLength * 500)).toDouble()
+        get() = ((moves * 10) + (snakeLength * snakeLength) + (snakeLength * 500) + (score)).toDouble()
 
     init {
         width = 50
@@ -61,6 +62,8 @@ class SnakeGame {
             node = node.next
         }
 
+        val d1 = Math.hypot(appleX - head.x.toDouble(), appleY - head.y.toDouble())
+
         if (dir == 0)
             head.move(0, -1)
         else if (dir == 1)
@@ -68,6 +71,11 @@ class SnakeGame {
         else if (dir == 2)
             head.move(0, 1)
         else if (dir == 3) head.move(-1, 0)
+
+        val d2 = Math.hypot(appleX - head.x.toDouble(), appleY - head.y.toDouble())
+
+        if (d2 < d1) score += 100
+        else score -= 30
 
         if (!isInBounds(head.x, head.y)) {
             deathReason = 2
@@ -85,7 +93,7 @@ class SnakeGame {
             addSegment()
             placeApple()
             snakeLength++
-            leftToLive += 250
+            leftToLive += 75
         }
     }
 
@@ -107,8 +115,8 @@ class SnakeGame {
 
     fun placeApple() {
         do {
-            appleX = ThreadLocalRandom.current().nextInt(1, width + 1)
-            appleY = ThreadLocalRandom.current().nextInt(1, height + 1)
+            appleX = random.nextInt(1, width + 1)
+            appleY = random.nextInt(1, height + 1)
         } while (isSnakeAt(appleX, appleY, false))
     }
 
@@ -118,8 +126,9 @@ class SnakeGame {
             for (j in -1..1) {
                 if (i == 0 && j == 0) continue
                 if (i != 0 && j != 0) continue
-                val canMove = isInBounds(head.x + i, head.y + j) && !isSnakeAt(head.x + i, head.y + j, false)
-                vision.add(if (canMove) 0f else 1f)
+                look(i, j)
+                //val canMove = isInBounds(head.x + i, head.y + j) && !isSnakeAt(head.x + i, head.y + j, false)
+                vision.add(look(i, j))
             }
         }
 
@@ -134,7 +143,7 @@ class SnakeGame {
         return output
     }
 
-    private fun look(xStep: Int, yStep: Int): Float? {
+    private fun look(xStep: Int, yStep: Int): Float {
         var distance = 0f
 
         var x = xStep + head.x
