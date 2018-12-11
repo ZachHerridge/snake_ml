@@ -97,6 +97,10 @@ public class Genome implements Comparable {
         this.connectionGeneList = connectionGeneList;
     }
 
+    public TreeMap<Integer, NodeGene> getNodes() {
+        return nodes;
+    }
+
     public static Genome crossOver(Genome parent1, Genome parent2){
         if(parent1.fitness < parent2.fitness){
             Genome temp = parent1;

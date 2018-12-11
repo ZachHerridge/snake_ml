@@ -2,7 +2,7 @@ package uwrf.edu.acm.snake
 
 import kotlin.random.Random
 
-class SnakeGame(val random: Random) {
+class SnakeGame(val random: Random, val generation: Int) {
 
     var dir = 0
 
@@ -17,7 +17,7 @@ class SnakeGame(val random: Random) {
     private var moves = 0
     var snakeLength = 1
         private set
-    private var leftToLive = 250
+    var leftToLive = 250
 
     var deathReason = 0
         private set
@@ -31,7 +31,7 @@ class SnakeGame(val random: Random) {
     var score = 0
 
     val fitness: Double
-        get() = ((moves * 10) + (snakeLength * snakeLength) + (snakeLength * 500) + (score)).toDouble()
+        get() = ((moves * 25) + (snakeLength * snakeLength) + (snakeLength * 10) + (score)).toDouble()
 
     init {
         width = 50
@@ -40,10 +40,9 @@ class SnakeGame(val random: Random) {
         this.head = head
         this.tail = head
 
-        addSegment()
-        addSegment()
-        addSegment()
-        addSegment()
+        repeat((generation / 2).coerceIn(4, 20)){
+            addSegment()
+        }
 
         placeApple()
     }
@@ -74,8 +73,10 @@ class SnakeGame(val random: Random) {
 
         val d2 = Math.hypot(appleX - head.x.toDouble(), appleY - head.y.toDouble())
 
-        if (d2 < d1) score += 100
-        else score -= 30
+        if (generation <= 35){
+            if (d2 < d1) score += 150
+            else score -= 150
+        }
 
         if (!isInBounds(head.x, head.y)) {
             deathReason = 2
@@ -93,7 +94,7 @@ class SnakeGame(val random: Random) {
             addSegment()
             placeApple()
             snakeLength++
-            leftToLive += 75
+            leftToLive += snakeLength * 10
         }
     }
 
@@ -127,18 +128,23 @@ class SnakeGame(val random: Random) {
                 if (i == 0 && j == 0) continue
                 if (i != 0 && j != 0) continue
                 look(i, j)
-                //val canMove = isInBounds(head.x + i, head.y + j) && !isSnakeAt(head.x + i, head.y + j, false)
-                vision.add(look(i, j))
+                val canMove = isInBounds(head.x + i, head.y + j) && !isSnakeAt(head.x + i, head.y + j, false)
+                vision.add(if (canMove) 0f else 1f)
             }
         }
 
         val output = mutableListOf<Float>()
         output.addAll(vision)
 
+        output.add(head.x.toFloat())
+        output.add(head.y.toFloat())
+
         output.add(head.x - appleX.toFloat())
         output.add(head.y - appleY.toFloat())
 
         output.add(dir.toFloat())
+
+
 
         return output
     }
@@ -149,8 +155,11 @@ class SnakeGame(val random: Random) {
         var x = xStep + head.x
         var y = yStep + head.y
 
-        while (isInBounds(x, y) && !isSnakeAt(x, y, false)) {
-            distance++
+        while (isInBounds(x, y)) {
+            if (isSnakeAt(x, y, false)) {
+                return 1f
+            }
+
             x += xStep
             y += yStep
         }
